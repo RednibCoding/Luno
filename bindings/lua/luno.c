@@ -365,6 +365,25 @@ static int l_Luno_DrawPixel(lua_State *L)
     return 0;
 }
 
+// Luno_GetPixel
+static int l_Luno_GetPixel(lua_State *L)
+{
+    // Get the LunoImage from the first argument
+    LunoImage *image = *(LunoImage **)luaL_checkudata(L, 1, "LunoImage");
+
+    // Get the x and y coordinates
+    int x = luaL_checkinteger(L, 2);
+    int y = luaL_checkinteger(L, 3);
+
+    // Call the Luno_GetPixel function
+    LunoColor color = Luno_GetPixel(image, x, y);
+
+    // Push the color as a table or userdata
+    lua_pushLunoColor(L, color);
+
+    return 1;
+}
+
 // Luno_CreateImage
 static int l_Luno_CreateImage(lua_State *L)
 {
@@ -1090,6 +1109,7 @@ static const luaL_Reg lunolib[] = {
     {"load_image", l_Luno_LoadImage},
     {"load_image_mem", l_Luno_LoadImageMem},
     {"draw_pixel", l_Luno_DrawPixel},
+    {"get_pixel", l_Luno_GetPixel},
     {"draw_line", l_Luno_DrawLine},
     {"draw_rect", l_Luno_DrawRect},
     {"draw_circle", l_Luno_DrawCircle},

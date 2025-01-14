@@ -99,6 +99,10 @@ Cleans up resources and closes the window.
 
 Draws a pixel on the screen.
 
+#### `luno.get_pixel(x, y, color)`
+
+Gets the pixel color of the given image at the location x, y.
+
 #### `luno.draw_rect(rect, color, fill)`
 
 Draws a rectangle.

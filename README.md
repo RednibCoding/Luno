@@ -124,6 +124,10 @@ Clears the screen to the current clear color.
 
 Draws a single pixel at the specified coordinates.
 
+#### `LunoColor Luno_GetPixel(LunoImage *image, int x, int y)`
+
+Gets the pixel color of the given image at the location x, y.
+
 #### `void Luno_DrawRect(LunoRect rect, LunoColor color, bool fill)`
 
 Draws a rectangle.

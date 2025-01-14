@@ -135,6 +135,9 @@ extern "C"
     // Draws a single pixel on the screen.
     void Luno_DrawPixel(int x, int y, LunoColor color);
 
+    // Gets the pixel color of the given image at the location x, y.
+    LunoColor Luno_GetPixel(LunoImage *image, int x, int y);
+
     // Creates a blank image with the given dimensions.
     LunoImage *Luno_CreateImage(int width, int height);
 
@@ -629,6 +632,18 @@ extern "C"
         _LunoPixel *pixel = &_lunoContext.backbuffer.pixels[x + y * _lunoContext.backbuffer.width];
         _LunoPixel src = {color.b, color.g, color.r, color.a}; // Convert LunoColor to LunoPixel
         *pixel = _Luno_BlendPixel(*pixel, src);
+    }
+
+    LunoColor Luno_GetPixel(LunoImage *image, int x, int y)
+    {
+        if (!image || x < 0 || y < 0 || x >= image->width || y >= image->height)
+        {
+            // Return a fully transparent color for invalid coordinates or null image
+            return (LunoColor){0, 0, 0, 0};
+        }
+
+        _LunoPixel *pixel = &image->pixels[x + y * image->width];
+        return (LunoColor){pixel->r, pixel->g, pixel->b, pixel->a};
     }
 
     LunoImage *Luno_CreateImage(int width, int height)

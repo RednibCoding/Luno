@@ -15,6 +15,9 @@ int main()
 
     LunoRect srcRect = {0, 0, image->width / 2, image->height / 2};
 
+    LunoColor color = Luno_GetPixel(image, 76, 178);
+    printf("Pixel color: %d %d %d %d", color.r, color.g, color.b, color.a);
+
     while (Luno_Update())
     {
         Luno_Clear();
