@@ -76,6 +76,10 @@ Processes input and updates the frame.
 
 Clears the screen to the background color.
 
+#### `luno.set_window_scale(factor)`
+
+Scales the window size based on the given factor..
+
 #### `luno.set_clear_color(color)`
 
 Sets the background color.

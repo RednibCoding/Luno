@@ -2,9 +2,11 @@
 local luno = require("luno")
 
 -- Initialize the Luno library
-if not luno.create("Luno Collision Test", 800, 600, 60) then
+if not luno.create("Luno Collision Test", 400, 300, 60) then
     error("Failed to initialize Luno!")
 end
+
+luno.set_window_scale(2)
 
 -- Define test shapes
 local rect1 = luno.rect(100, 100, 200, 150)
