@@ -37,21 +37,24 @@ It provides a simple interface for window management, drawing primitives, image 
 
 2. **Copy the 'luno' folder into your project**.
 
-3. **Compile your project**:
+3. **Include the Luno header**:
 
-   ```sh
-   gcc -o game.exe main.c -lgdi32 -luser32 -lwinmm
-   ```
-
-4. **Include the Luno header**:
    ```c
    #define LUNO_IMPL
    #include "luno/luno.h"
    ```
+
    Do `#define LUNO_IMPL` before you include `luno.h` in _one_ C file to create the implementation.
    In all other files just include `luno.h` without creating the implementations.
+
    ```c
    #include "luno/luno.h"
+   ```
+
+4. **Compile your project**:
+
+   ```sh
+   gcc -o game.exe main.c -lgdi32 -luser32 -lwinmm
    ```
 
 ## Example
