@@ -1,4 +1,4 @@
-# Luno Library
+# Luno
 
 ## Introduction
 
@@ -457,4 +457,4 @@ Description: Milliseconds since the application started.
 
 ## License
 
-Luno is open-source and available under the MIT License.
+Luno is open-source and available under the [MIT](LICENSE) License.
