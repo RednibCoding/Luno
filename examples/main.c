@@ -4,48 +4,24 @@
 
 int main()
 {
-    if (!Luno_Create("Luno Window", 800, 600, 30))
+    if (!Luno_Create("Luno Window", 300, 100, 30))
     {
         return -1;
     }
 
-    LunoImage *image = Luno_LoadImage("assets/moon.png");
-
-    Luno_SetClearColor((LunoColor){100, 100, 100, 255});
-
-    LunoRect srcRect = {0, 0, image->width / 2, image->height / 2};
-
-    LunoTimer myTimer = Luno_CreateTimer(1000);
+    LunoTimer timer = Luno_CreateTimer(1000);
 
     while (Luno_Update())
     {
         Luno_Clear();
-        Luno_DrawText("Blended Text!", 50, 50, (LunoColor){255, 255, 255, 255});
-        // Luno_DrawImage(image, 10, 10);
-        Luno_DrawImageRect(image, 100, 100, srcRect);
 
-        if (Luno_TimerTicked(&myTimer))
+        if (Luno_TimerTicked(&timer))
         {
-            printf("Timer ticked!\n");
-            printf("Milliseconds since start: %d\n", lunoMS);
+            printf("Tick...");
         }
-
-        if (Luno_IsMouseButtonPressed(0))
-        {
-            if (Luno_IsCursorVisible())
-            {
-
-                Luno_SetCursorVisibility(false);
-            }
-            else
-            {
-                Luno_SetCursorVisibility(true);
-            }
-            printf("Pressed");
-        }
+        printf("timer %d\n", Luno_TimerElapsed(&timer));
     }
 
-    Luno_DestroyImage(image);
     Luno_Close();
     return 0;
 }

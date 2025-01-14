@@ -105,9 +105,9 @@ extern "C"
         LunoGlyph glyphs[256]; // Glyphs for ASCII characters.
     } LunoFont;                // Represents a bitmap font.
 
-    extern double lunoDT;  // Delta time in seconds since the last frame.
-    extern double lunoFPS; // Current frames per second.
-    extern int lunoMS;     // Milliseconds since the application started.
+    double lunoDT;  // Delta time in seconds since the last frame.
+    double lunoFPS; // Current frames per second.
+    int lunoMS;     // Milliseconds since the application started.
 
     /** Initialization and Cleanup **/
 
@@ -120,7 +120,7 @@ extern "C"
     /** Window Management **/
 
     // Scales the window size based on the given factor.
-    void SetWindowScale(int factor);
+    void Luno_SetWindowScale(int factor);
 
     /** Rendering Control **/
 
@@ -546,8 +546,11 @@ extern "C"
         _lunoContext.windowWidth = width;
         _lunoContext.windowHeight = height;
         _lunoContext.clearColor = (LunoColor){0, 0, 0, 0};
-        _lunoContext.prevTime = _Luno_Now();
+        _lunoContext.prevTime = 0;
         _lunoContext.startTime = _Luno_Now();
+
+        lunoFPS = 0;
+        lunoDT = 0;
         lunoMS = 0;
 
         // Load the default font
@@ -905,6 +908,11 @@ extern "C"
         lunoFPS = (lunoDT > 0) ? (1.0 / lunoDT) : 0;
         lunoMS = (int)((_lunoContext.prevTime - _lunoContext.startTime) * 1000);
 
+        if (lunoDT > _lunoContext.stepTime * 10)
+        {
+            lunoDT = _lunoContext.stepTime;
+        }
+
         for (int i = 0; i < 256; i++)
         {
             _lunoContext.keysPrev[i] = _lunoContext.keys[i];
@@ -1015,7 +1023,7 @@ extern "C"
 
     bool Luno_TimerTicked(LunoTimer *timer)
     {
-        int now = (int)(_Luno_Now() * 1000); // Current time in milliseconds
+        int now = (int)(_Luno_Now() * 1000);
         if ((now - timer->lastTrigger) >= timer->interval)
         {
             timer->lastTrigger = now;
@@ -1031,7 +1039,8 @@ extern "C"
 
     int Luno_TimerElapsed(LunoTimer *timer)
     {
-        return (int)(_Luno_Now())-timer->lastTrigger;
+        int now = (int)(_Luno_Now() * 1000);
+        return now - timer->lastTrigger;
     }
 
     LunoFont *Luno_FontFromImage(LunoImage *image, int glyphWidth, int glyphHeight)

@@ -458,6 +458,10 @@ Description: Milliseconds since the application started.
 
 ---
 
+## Bindings
+
+- Lua bindings: [Readme](bindings/lua/README.md)
+
 ## License
 
 Luno is open-source and available under the [MIT](LICENSE) License.
