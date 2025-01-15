@@ -1,12 +1,7 @@
-#include "stdio.h"
-#define LUNO_IMPL
-#include "../luno/Luno.h"
-
-// #define RC_TGA_IMPL
-// #include "rc_tga.h"
-
 #include <stdio.h>
 #include <stdlib.h>
+#define LUNO_IMPL
+#include "../Luno.h"
 
 int main()
 {

@@ -1,6 +1,6 @@
 #include "stdio.h"
 #define LUNO_IMPL
-#include "../luno/Luno.h"
+#include "../Luno.h"
 
 int main()
 {
@@ -9,7 +9,7 @@ int main()
         return -1;
     }
 
-    LunoImage *image = Luno_LoadImage("assets/moon2.tga");
+    LunoImage *image = Luno_LoadImage("assets/moon_32bit.tga");
 
     Luno_SetClearColor((LunoColor){20, 20, 20, 255});
 
