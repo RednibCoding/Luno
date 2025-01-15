@@ -1,6 +1,6 @@
 #include "stdio.h"
 #define LUNO_IMPL
-#include "../Luno.h"
+#include "../luno/Luno.h"
 
 int main()
 {
