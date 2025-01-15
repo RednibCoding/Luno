@@ -9,7 +9,7 @@ int main()
         return -1;
     }
 
-    LunoImage *image = Luno_LoadImage("assets/moon.png");
+    LunoImage *image = Luno_LoadImage("assets/moon.tga");
 
     Luno_SetClearColor((LunoColor){20, 20, 20, 255});
 

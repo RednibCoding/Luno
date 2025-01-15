@@ -6,7 +6,7 @@
 int main()
 {
     // Open the file for writing in binary mode
-    FILE *file = fopen("output.png", "wb");
+    FILE *file = fopen("output.tga", "wb");
     if (!file)
     {
         perror("Failed to open file");
@@ -14,8 +14,8 @@ int main()
     }
 
     // Write the byte array to the file
-    size_t written = fwrite(_lunoFontPngData, 1, _lunoFontPngDataSize, file);
-    if (written != _lunoFontPngDataSize)
+    size_t written = fwrite(_lunoFontImageData, 1, _lunoFontImageDataSize, file);
+    if (written != _lunoFontImageDataSize)
     {
         perror("Failed to write all data to file");
         fclose(file);

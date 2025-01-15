@@ -145,7 +145,7 @@ extern "C"
     LunoImage *Luno_LoadImage(const char *filePath);
 
     // Loads an image from memory.
-    LunoImage *Luno_LoadImageMem(const char *buffer, int bufferLen);
+    LunoImage *Luno_LoadImageMem(unsigned char *buffer, int bufferLen);
 
     // Fills an image with a specified color.
     void Luno_FillImage(LunoImage *image, LunoColor color);
@@ -233,7 +233,7 @@ extern "C"
     LunoFont *Luno_LoadFont(const char *filePath, int glyphWidth, int glyphHeight);
 
     // Loads a font from memory.
-    LunoFont *Luno_LoadFontMem(const char *buffer, int bufferLen, int glyphWidth, int glyphHeight);
+    LunoFont *Luno_LoadFontMem(unsigned char *buffer, int bufferLen, int glyphWidth, int glyphHeight);
 
     // Resets the font to the default font.
     void Luno_ResetFont();
@@ -284,9 +284,9 @@ extern "C"
 {
 #endif
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "include/stb_image.h"
 #include "include/embedded_font.h"
+#define RC_TGA_IMPL
+#include "include/rc_tga.h"
 
     // --- Types ---
     typedef struct
@@ -458,7 +458,7 @@ extern "C"
                 // Clear the window
                 RECT clientRect;
                 GetClientRect(hwnd, &clientRect);
-                HBRUSH brush = CreateSolidBrush(RGB(_lunoContext.clearColor.b, _lunoContext.clearColor.g, _lunoContext.clearColor.r));
+                HBRUSH brush = CreateSolidBrush(RGB(_lunoContext.clearColor.r, _lunoContext.clearColor.g, _lunoContext.clearColor.b));
                 FillRect(_lunoContext.hdc, &clientRect, brush);
                 DeleteObject(brush);
 
@@ -498,6 +498,41 @@ extern "C"
                 *dstPixel = _Luno_BlendPixel(*dstPixel, srcPixel);
             }
         }
+    }
+
+    // Function to convert pixels loaded from rc_load_tga to LunoImage
+    LunoImage *_ConvertPixelsToLunoImage(unsigned char *pixels, int width, int height)
+    {
+        // Create a new LunoImage
+        LunoImage *image = (LunoImage *)malloc(sizeof(LunoImage));
+        if (!image)
+            return NULL;
+
+        image->width = width;
+        image->height = height;
+
+        // Allocate memory for the new pixel array
+        image->pixels = (_LunoPixel *)malloc(sizeof(_LunoPixel) * image->width * image->height);
+        if (image->pixels == NULL)
+        {
+            fprintf(stderr, "Failed to allocate memory for LunoImage pixels.\n");
+            exit(1);
+        }
+
+        // Convert pixel data from rcTga to LunoImage
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                int index = (y * width + x) * 4; // 4 bytes per pixel (RGBA)
+                image->pixels[y * width + x].r = pixels[index + 0];
+                image->pixels[y * width + x].g = pixels[index + 1];
+                image->pixels[y * width + x].b = pixels[index + 2];
+                image->pixels[y * width + x].a = pixels[index + 3];
+            }
+        }
+
+        return image;
     }
 
     // --- Public Interface Implementation ---
@@ -557,7 +592,7 @@ extern "C"
         lunoMS = 0;
 
         // Load the default font
-        _lunoContext.defaultFont = Luno_LoadFontMem(_lunoFontPngData, _lunoFontPngDataSize, _lunoFontWidth, _lunoFontHeight);
+        _lunoContext.defaultFont = Luno_LoadFontMem(_lunoFontImageData, _lunoFontImageDataSize, _lunoFontWidth, _lunoFontHeight);
         _lunoContext.currentFont = _lunoContext.defaultFont;
 
         return true;
@@ -663,49 +698,32 @@ extern "C"
         return image;
     }
 
-    LunoImage *Luno_LoadImageMem(const char *buffer, int bufferLen)
+    LunoImage *Luno_LoadImageMem(unsigned char *buffer, int bufferLen)
     {
         if (!buffer || bufferLen <= 0)
         {
-            printf("ERROR <Luno_LoadImageMem>: Invalid Image buffer!");
-            return NULL;
+            printf("ERROR <Luno_LoadImageMem>: Invalid image buffer!");
+            exit(0);
         }
 
-        LunoImage *image = (LunoImage *)malloc(sizeof(LunoImage));
-        if (!image)
-            return NULL;
-
-        int channels;
-        unsigned char *data = stbi_load_from_memory((const unsigned char *)buffer, bufferLen, &image->width, &image->height, &channels, STBI_rgb_alpha);
+        int width;
+        int height;
+        unsigned char *data = rc_load_tga_mem(buffer, bufferLen, &width, &height);
         if (!data)
         {
-            free(image);
-            return NULL;
+            printf("ERROR <Luno_LoadImageMem>: Unable to load image data!");
+            exit(0);
         }
 
-        image->pixels = (_LunoPixel *)calloc(image->width * image->height, sizeof(_LunoPixel));
-        if (!image->pixels)
+        LunoImage *image = _ConvertPixelsToLunoImage(data, width, height);
+        if (!image)
         {
-            stbi_image_free(data);
-            free(image);
-            return NULL;
+            free(data);
+            printf("ERROR <Luno_LoadImageMem>: Unable to convert pixel data to LunoImage!");
+            exit(0);
         }
 
-        // Convert pixel data to LunoPixel format
-        for (int y = 0; y < image->height; y++)
-        {
-            for (int x = 0; x < image->width; x++)
-            {
-                int index = (y * image->width + x) * 4;
-                _LunoPixel *pixel = &image->pixels[y * image->width + x];
-                pixel->r = data[index + 0];
-                pixel->g = data[index + 1];
-                pixel->b = data[index + 2];
-                pixel->a = data[index + 3];
-            }
-        }
-
-        stbi_image_free(data);
+        free(data);
         return image;
     }
 
@@ -714,32 +732,22 @@ extern "C"
         if (!filePath)
         {
             printf("ERROR <Luno_LoadImage>: No image path provided!");
-            return NULL;
+            exit(0);
         }
 
-        FILE *file = fopen(filePath, "rb");
-        if (!file)
+        int width;
+        int height;
+        unsigned char *data = rc_load_tga(filePath, &width, &height);
+
+        LunoImage *image = _ConvertPixelsToLunoImage(data, width, height);
+        if (!image)
         {
-            printf("ERROR <Luno_LoadImage>: Unable to open image file: %s\n", filePath);
-            return NULL;
+            free(data);
+            printf("ERROR <Luno_LoadImage>: Unable to convert pixel data to LunoImage!");
+            exit(0);
         }
 
-        fseek(file, 0, SEEK_END);
-        int fileSize = ftell(file);
-        fseek(file, 0, SEEK_SET);
-
-        char *buffer = (char *)malloc(fileSize);
-        if (!buffer)
-        {
-            fclose(file);
-            return NULL;
-        }
-
-        fread(buffer, 1, fileSize, file);
-        fclose(file);
-
-        LunoImage *image = Luno_LoadImageMem(buffer, fileSize);
-        free(buffer);
+        free(data);
         return image;
     }
 
@@ -748,7 +756,7 @@ extern "C"
         if (!image || !image->pixels)
         {
             printf("ERROR <Luno_FillImage>: Invalid image!");
-            return;
+            exit(0);
         }
 
         _LunoPixel pixel = {color.b, color.g, color.r, color.a};
@@ -768,7 +776,7 @@ extern "C"
         if (!image || !image->pixels)
         {
             printf("ERROR <Luno_DrawImageRect>: Invalid image!");
-            return;
+            exit(0);
         }
 
         // Clamp the source rectangle to the bounds of the image
@@ -901,6 +909,11 @@ extern "C"
 
     bool Luno_Update()
     {
+        if (!_lunoContext.backbuffer.pixels)
+        {
+            printf("ERROR <Luno_Update>: No window! Create a window first!");
+            exit(0);
+        }
         // present
         // RedrawWindow(_lunoContext.hwnd, 0, 0, RDW_INVALIDATE | RDW_UPDATENOW);
         InvalidateRect(_lunoContext.hwnd, NULL, FALSE);
@@ -1098,7 +1111,7 @@ extern "C"
         return Luno_FontFromImage(fontImage, glyphWidth, glyphHeight);
     }
 
-    LunoFont *Luno_LoadFontMem(const char *buffer, int bufferLen, int glyphWidth, int glyphHeight)
+    LunoFont *Luno_LoadFontMem(unsigned char *buffer, int bufferLen, int glyphWidth, int glyphHeight)
     {
         LunoImage *fontImage = Luno_LoadImageMem(buffer, bufferLen);
         if (!fontImage)
@@ -1169,7 +1182,7 @@ extern "C"
         if (!_lunoContext.currentFont || !text)
         {
             printf("ERROR: <Luno_DrawText>: No font set!\n");
-            return;
+            exit(0);
         }
 
         for (const char *p = text; *p; p++)
