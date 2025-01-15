@@ -78,12 +78,7 @@ extern "C"
 
     typedef struct
     {
-        unsigned char r, g, b, a;
-    } _LunoPixel; // Internal pixel representation for images.
-
-    typedef struct
-    {
-        _LunoPixel *pixels;
+        LunoColor *pixels;
         int width, height;
     } LunoImage; // Represents an image or a buffer.
 
@@ -328,9 +323,9 @@ extern "C"
         return clock() / 1000.0;
     }
 
-    static inline _LunoPixel _Luno_BlendPixel(_LunoPixel dst, _LunoPixel src)
+    static inline LunoColor _Luno_BlendPixel(LunoColor dst, LunoColor src)
     {
-        _LunoPixel res;
+        LunoColor res;
         res.r = dst.r + (((src.r - dst.r) * src.a) >> 8);
         res.g = dst.g + (((src.g - dst.g) * src.a) >> 8);
         res.b = dst.b + (((src.b - dst.b) * src.a) >> 8);
@@ -497,8 +492,8 @@ extern "C"
                 if (dstX < 0 || dstX >= dst->width)
                     continue; // Skip columns outside the destination bounds
 
-                _LunoPixel *dstPixel = &dst->pixels[dstX + dstY * dst->width];
-                _LunoPixel srcPixel = src->pixels[i + j * src->width];
+                LunoColor *dstPixel = &dst->pixels[dstX + dstY * dst->width];
+                LunoColor srcPixel = src->pixels[i + j * src->width];
                 *dstPixel = _Luno_BlendPixel(*dstPixel, srcPixel);
             }
         }
@@ -516,7 +511,7 @@ extern "C"
         image->height = height;
 
         // Allocate memory for the new pixel array
-        image->pixels = (_LunoPixel *)malloc(sizeof(_LunoPixel) * image->width * image->height);
+        image->pixels = (LunoColor *)malloc(sizeof(LunoColor) * image->width * image->height);
         if (image->pixels == NULL)
         {
             fprintf(stderr, "Failed to allocate memory for LunoImage pixels.\n");
@@ -579,7 +574,7 @@ extern "C"
         // Initialize back buffer
         _lunoContext.backbuffer.width = width;
         _lunoContext.backbuffer.height = height;
-        _lunoContext.backbuffer.pixels = (_LunoPixel *)calloc(width * height, sizeof(_LunoPixel));
+        _lunoContext.backbuffer.pixels = (LunoColor *)calloc(width * height, sizeof(LunoColor));
         if (!_lunoContext.backbuffer.pixels)
         {
             return false;
@@ -668,8 +663,8 @@ extern "C"
             return;
         }
 
-        _LunoPixel *pixel = &_lunoContext.backbuffer.pixels[x + y * _lunoContext.backbuffer.width];
-        _LunoPixel src = {color.b, color.g, color.r, color.a}; // Convert LunoColor to LunoPixel
+        LunoColor *pixel = &_lunoContext.backbuffer.pixels[x + y * _lunoContext.backbuffer.width];
+        LunoColor src = {color.b, color.g, color.r, color.a}; // Convert LunoColor to LunoPixel
         *pixel = _Luno_BlendPixel(*pixel, src);
     }
 
@@ -681,7 +676,7 @@ extern "C"
             return (LunoColor){0, 0, 0, 0};
         }
 
-        _LunoPixel *pixel = &image->pixels[x + y * image->width];
+        LunoColor *pixel = &image->pixels[x + y * image->width];
         return (LunoColor){pixel->r, pixel->g, pixel->b, pixel->a};
     }
 
@@ -693,7 +688,7 @@ extern "C"
 
         image->width = width;
         image->height = height;
-        image->pixels = (_LunoPixel *)calloc(width * height, sizeof(_LunoPixel));
+        image->pixels = (LunoColor *)calloc(width * height, sizeof(LunoColor));
         if (!image->pixels)
         {
             image->width = 0;
@@ -763,7 +758,7 @@ extern "C"
             exit(0);
         }
 
-        _LunoPixel pixel = {color.b, color.g, color.r, color.a};
+        LunoColor pixel = {color.b, color.g, color.r, color.a};
         for (int i = 0; i < image->width * image->height; i++)
         {
             image->pixels[i] = pixel;
@@ -799,8 +794,8 @@ extern "C"
                 if (dstX < 0 || dstX >= _lunoContext.backbuffer.width)
                     continue; // Skip columns outside the backbuffer bounds
 
-                _LunoPixel *dstPixel = &_lunoContext.backbuffer.pixels[dstX + dstY * _lunoContext.backbuffer.width];
-                _LunoPixel srcPixel = image->pixels[i + j * image->width];
+                LunoColor *dstPixel = &_lunoContext.backbuffer.pixels[dstX + dstY * _lunoContext.backbuffer.width];
+                LunoColor srcPixel = image->pixels[i + j * image->width];
                 *dstPixel = _Luno_BlendPixel(*dstPixel, srcPixel);
             }
         }
@@ -1206,16 +1201,16 @@ extern "C"
                     if (dstX < 0 || dstY < 0 || dstX >= _lunoContext.backbuffer.width || dstY >= _lunoContext.backbuffer.height)
                         continue;
 
-                    _LunoPixel *srcPixel = &_lunoContext.currentFont->image->pixels[srcX + srcY * _lunoContext.currentFont->image->width];
+                    LunoColor *srcPixel = &_lunoContext.currentFont->image->pixels[srcX + srcY * _lunoContext.currentFont->image->width];
                     if (srcPixel->a == 0)
                         continue; // Skip fully transparent pixels
 
                     // Blend the glyph pixel with the provided text color
-                    _LunoPixel textColor = {color.b, color.g, color.r, color.a};
-                    _LunoPixel blendedPixel = _Luno_BlendPixel(*srcPixel, textColor);
+                    LunoColor textColor = {color.b, color.g, color.r, color.a};
+                    LunoColor blendedPixel = _Luno_BlendPixel(*srcPixel, textColor);
 
                     // Write the blended pixel to the backbuffer
-                    _LunoPixel *dstPixel = &_lunoContext.backbuffer.pixels[dstX + dstY * _lunoContext.backbuffer.width];
+                    LunoColor *dstPixel = &_lunoContext.backbuffer.pixels[dstX + dstY * _lunoContext.backbuffer.width];
                     *dstPixel = _Luno_BlendPixel(*dstPixel, blendedPixel);
                 }
             }
