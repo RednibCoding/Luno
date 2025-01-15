@@ -284,6 +284,7 @@ extern "C"
 {
 #endif
 
+    // Forward declarations
     static unsigned char _lunoFontImageData[];
     static int _lunoFontImageDataSize;
     static int _lunoFontWidth;

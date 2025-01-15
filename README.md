@@ -23,7 +23,7 @@ It provides a simple interface for window management, drawing primitives, image 
 - Small header-only library: ~1.2k lines of C
 - Software rendered images and bitmap fonts
 - Keyboard and mouse input
-- Image Loading (via stb_image)
+- Image Loading (via [rc_tga](https://gist.github.com/RednibCoding/1eb568f1aa1ec91b1d1ba75c28ca8e1f))
 - No dependencies
 - Windows only
 
