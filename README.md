@@ -35,7 +35,7 @@ It provides a simple interface for window management, drawing primitives, image 
    git clone git@github.com:RednibCoding/luno.git
    ```
 
-2. **Copy the 'luno' folder into your project**.
+2. **Copy the 'luno.h' into your project**.
 
 3. **Include the Luno header**:
 
